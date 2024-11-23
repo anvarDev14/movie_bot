@@ -1,4 +1,3 @@
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery
@@ -8,9 +7,6 @@ from keyboards.inline.admin import keyboard
 from loader import dp, kino_db, user_db
 from states.states import KinoAddState, DeleteState, EditCap
 
-
-
-
 # Hafta va oylik filmlarni olish
 hafta_movies = kino_db.get_movies_hafta()
 oy_movies = kino_db.get_movies_oy()
@@ -18,7 +14,7 @@ oy_movies = kino_db.get_movies_oy()
 
 @dp.message_handler(commands='admin')
 async def user_count(message: types.Message):
-    if str(message.from_user.id) == ADMINS:
+    if str(message.from_user.id) in ADMINS:
         await message.answer(text='.', reply_markup=keyboard)
     else:
         await message.answer("Siz admin emassiz.")
