@@ -9,7 +9,7 @@ from loader import dp, kino_db, user_db
 from states.states import KinoAddState, DeleteState, EditCap
 
 
-# ADMINS=6369838846
+ADMINS=6369838846
 #
 # async def check_super_admin_permission(telegram_id: int):
 #     logging.info(f"Checking super admin permission for telegram_id: {telegram_id}")
