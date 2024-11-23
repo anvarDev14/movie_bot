@@ -129,9 +129,3 @@ dmypy.json
 .pyre/
 .idea/*
 .env
-
-
-#database ffiles
-
-*.db
-data/*.db
