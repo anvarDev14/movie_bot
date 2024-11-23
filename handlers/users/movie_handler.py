@@ -14,7 +14,7 @@ oy_movies = kino_db.get_movies_oy()
 
 @dp.message_handler(commands='admin')
 async def user_count(message: types.Message):
-    if str(message.from_user.id) == ADMINS:
+    if int(message.from_user.id) == ADMINS:
         await message.answer(text='.', reply_markup=keyboard)
     else:
         await message.answer("Siz admin emassiz.")
