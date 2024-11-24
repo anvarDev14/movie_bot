@@ -96,30 +96,9 @@ class KinoDatabase(Database):
         """
         return self.execute(sql, fetchall=True)
 
-    # def get_movies_oy(self):
-    #     sql = """
-    #         SELECT name FROM Kino
-    #         WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
-    #     """
-    #     return self.execute(sql, fetchall=True)
-
-
-def get_movies_oy(self):
-    try:
-        # SQL so'rovi: Joriy oyda qo'shilgan kinolarni olish
+    def get_movies_oy(self):
         sql = """
             SELECT name FROM Kino
             WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
         """
-
-        # SQL so'rovini bajarish
-        result = self.execute(sql, fetchall=True)
-
-        # Natijani konsolga chiqarish (debug qilish uchun)
-        print("Joriy oy kinolari:", result)
-
-        return result
-    except Exception as e:
-        # Xatolikni qayta ishlash va xatolik haqida ma'lumot chiqarish
-        print(f"Xatolik yuz berdi: {e}")
-        return None
+        return self.execute(sql, fetchall=True)
