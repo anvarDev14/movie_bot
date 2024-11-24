@@ -51,7 +51,6 @@ async def statistika(call: CallbackQuery):
     count = user_db.select_all_users()()
     await call.message.answer(f"Bazada <b>{count}</b> ta foydalanuvchi bor")
 
-stop = False
 @dp.callback_query_handler(text='ad')
 async def reklama(call: CallbackQuery):
     if str(call.message.from_user.id) in ADMINS:
