@@ -38,7 +38,7 @@ class UserDatatbase(Database):
         sql="""
             SELECT COUNT(*) FROM Users
             """
-        self.execute(sql,fetchone=True)
+        self.execute(sql,fetchall=True)
 
     def delete_users(self):
         self.execute("DELETE FROM Users WHERE TRUE",commit=True)
