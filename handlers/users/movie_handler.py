@@ -48,7 +48,7 @@ async def month_stat(call: CallbackQuery):
 @dp.callback_query_handler(text='stats')
 async def statistika(call: CallbackQuery):
     await call.message.delete()
-    count = user_db.count_users()
+    count = user_db.select_all_users()()
     await call.message.answer(f"Bazada <b>{count}</b> ta foydalanuvchi bor")
 
 stop = False
@@ -67,7 +67,7 @@ async def handle_ad_message(ad_message: types.Message):
     not_sent = 0
     sent = 0
     admins = 0
-    text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent}\nUmumiy: 0/{user_db.count_users()}\n\nStatus: Boshlanmoqda"
+    text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent}\nUmumiy: 0/{user_db.select_all_users()}\n\nStatus: Boshlanmoqda"
     status_message = await ad_message.answer(text, reply_markup=ad_menu)
     users = user_db.select_all_user_ids()
 
@@ -83,7 +83,7 @@ async def handle_ad_message(ad_message: types.Message):
         except:
             not_sent += 1
 
-        text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent} ({admins}ta Admin)\nUmumiy: {sent + not_sent}/{user_db.count_users()}\nStatus: Davom etmoqda"
+        text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent} ({admins}ta Admin)\nUmumiy: {sent + not_sent}/{user_db.select_all_users()}\nStatus: Davom etmoqda"
         await bot.edit_message_text(text, chat_id=ad_message.chat.id, message_id=status_message.message_id, reply_markup=ad_menu)
 
         if stop:
