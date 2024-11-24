@@ -1,12 +1,16 @@
-from aiogram import types
+from asyncio import timeout
+from datetime import datetime
+
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.handler import CancelHandler
-from aiogram.types import CallbackQuery
+
 
 from data.config import ADMINS
-from keyboards.inline.admin import keyboard, ad_menu
-from loader import dp, kino_db, user_db, bot
+from keyboards.inline.admin import keyboard,ad_menu
+from loader import dp, kino_db, user_db,bot
+from aiogram import types
 from states.states import KinoAddState, DeleteState, EditCap
+from aiogram.types import CallbackQuery
 
 # Hafta va oylik filmlarni olish
 hafta_movies = kino_db.get_movies_hafta()
@@ -51,11 +55,11 @@ async def statistika(call: CallbackQuery):
     count = user_db.select_all_users()()
     await call.message.answer(f"Bazada <b>{count}</b> ta foydalanuvchi bor")
 
-@dp.callback_query_handler(text='ad')
-async def reklama(call: CallbackQuery):
-    if str(call.message.from_user.id) in ADMINS:
-        await call.message.answer("Reklama yuborilmaydi, adminlar uchun.")
-        return
+    @dp.callback_query_handler(text='ad')
+    async def reklama(call: CallbackQuery):
+        if str(call.message.from_user.id) in ADMINS:
+            await call.message.answer("Reklama yuborilmaydi, adminlar uchun.")
+            return
 
     await call.message.delete()
     await call.message.answer("Reklama videosi yoki rasmini yoziv bilan yuboring.")
