@@ -1,20 +1,20 @@
 from aiogram import types
-from states.states import Search
-from loader import dp, kino_db, user_db
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.builtin import CommandStart
+from loader import dp, kino_db, user_db
 import logging
 from data.config import ADMINS
 
 
-@dp.message_handler(commands=['start', 'help'])
-async def welcome_message(message: types.Message):
+@dp.message_handler(CommandStart())
+async def bot_start(message: types.Message):
     """
-    Foydalanuvchi `start` yoki `help` komandalarini bosganda yoki birinchi marta yozganda,
-    avtomatik salomlashish xabari yuboriladi.
+    Foydalanuvchi botga birinchi marta kirganda, bot avtomatik kino kodi so‘raydi.
     """
     telegram_id = message.from_user.id
     username = message.from_user.username
 
+    # Foydalanuvchini bazaga qo'shish
     if not user_db.select_user(telegram_id=telegram_id):
         user_db.add_user(telegram_id=telegram_id, username=username)
         logging.info(f"Yangi foydalanuvchi qo‘shildi: telegram_id={telegram_id}, username={username}")
@@ -30,14 +30,14 @@ async def welcome_message(message: types.Message):
                 f"Bazada jami foydalanuvchilar soni: <b>{count[0]}</b>"
             )
 
+    # Foydalanuvchi birinchi marta startni bosganida kino kodi so‘raladi
     await message.answer(
         f"Assalomu alaykum, {message.from_user.full_name}! 👋\n\n"
-        "Iltimos, qidirayotgan kinoning kodini yuboring:"
+        "Iltimos, qidirayotgan kinoning kodini yuboring. Kod faqat raqamlardan iborat bo‘lishi kerak."
     )
-    await Search.waiting.set()
 
 
-@dp.message_handler(state=Search.waiting, content_types=types.ContentType.TEXT)
+@dp.message_handler(content_types=types.ContentType.TEXT)
 async def process_kino_kod(message: types.Message, state: FSMContext):
     """
     Kino kodini qayta ishlash va foydalanuvchiga kino ma'lumotlarini taqdim etish.
@@ -46,7 +46,7 @@ async def process_kino_kod(message: types.Message, state: FSMContext):
         kino_kod = int(message.text)
     except ValueError:
         await message.reply(
-            "❌ Iltimos, faqat son kiriting. Kod faqat raqamlardan iborat bo‘lishi kerak."
+            "❌ Iltimos, faqat son kiriting. Kino kodi raqamdan iborat bo‘lishi kerak."
         )
         return
 
@@ -63,13 +63,5 @@ async def process_kino_kod(message: types.Message, state: FSMContext):
         await message.answer(
             "❌ Afsuski, bu kod bo‘yicha kino topilmadi.\n\n"
             "🔗 Yana ko‘proq kinolarni qidirish uchun kanalimizga tashrif buyuring: "
-            "https://t.me/PremyeraFilm_A"
+            "[PremyeraFilm_A](https://t.me/PremyeraFilm_A)"
         )
-
-
-@dp.message_handler()
-async def process_unexpected_messages(message: types.Message):
-    """
-    Foydalanuvchi kino kodi yuborishdan tashqari boshqa xabar yuborganda javob beradi.
-    """
-    await message.answer("❌ Iltimos, kinoni kodi raqam sifatida yuboring.")
