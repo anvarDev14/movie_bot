@@ -1,16 +1,11 @@
-from asyncio import timeout
-from datetime import datetime
-
+from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.handler import CancelHandler
-
+from aiogram.types import CallbackQuery
 
 from data.config import ADMINS
-from keyboards.inline.admin import keyboard,ad_menu
-from loader import dp, kino_db, user_db,bot
-from aiogram import types
+from keyboards.inline.admin import keyboard
+from loader import dp, kino_db, user_db
 from states.states import KinoAddState, DeleteState, EditCap
-from aiogram.types import CallbackQuery
 
 # Hafta va oylik filmlarni olish
 hafta_movies = kino_db.get_movies_hafta()
@@ -52,68 +47,26 @@ async def month_stat(call: CallbackQuery):
 @dp.callback_query_handler(text='stats')
 async def statistika(call: CallbackQuery):
     await call.message.delete()
-    count = user_db.select_all_users()()
+    count = user_db.count_users()
     await call.message.answer(f"Bazada <b>{count}</b> ta foydalanuvchi bor")
 
-    stop = False
-
-    @dp.callback_query_handler(text='ad')
-    async def reklama(call: CallbackQuery):
-        if str(call.message.from_user.id) in ADMINS:
-            await call.message.answer("Reklama yuborilmaydi, adminlar uchun.")
-            return
-
-        await call.message.delete()
-        await call.message.answer("Reklama videosi yoki rasmini yoziv bilan yuboring.")
+@dp.callback_query_handler(text='ad')
+async def reklama(call: CallbackQuery):
+    await call.message.delete()
+    await call.message.answer("Reklama videosi yoki rasmini yozuv bilan yuboring.")
 
     @dp.message_handler(content_types=['photo', 'video', 'text'])
     async def handle_ad_message(ad_message: types.Message):
-        global stop  # Use the global stop flag
         not_sent = 0
         sent = 0
-        admins = 0
-        text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent}\nUmumiy: 0/{user_db.count_users()}\n\nStatus: Boshlanmoqda"
-        status_message = await ad_message.answer(text, reply_markup=ad_menu)
-        users = user_db.select_all_user_ids()
-
-        for user_id in users:
-            if str(user_id) in ADMINS:
-                not_sent += 1
-                admins += 1
-                continue
-
+        for user_id in user_db.select_all_user_ids():
             try:
                 await ad_message.forward(user_id)
                 sent += 1
-            except:
+            except Exception as e:
+                print(f"ERR: {e}")
                 not_sent += 1
-
-            text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent} ({admins}ta Admin)\nUmumiy: {sent + not_sent}/{user_db.count_users()}\nStatus: Davom etmoqda"
-            await bot.edit_message_text(text, chat_id=ad_message.chat.id, message_id=status_message.message_id,
-                                        reply_markup=ad_menu)
-
-            if stop:
-                stop = False
-                raise CancelHandler
-
-        text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent} ({admins}ta Admin)\nUmumiy: {user_db.count_users()}/{user_db.count_users()}\nStatus: Tugatildi"
-        await bot.edit_message_text(text, chat_id=ad_message.chat.id, message_id=status_message.message_id)
-
-    @dp.callback_query_handler(text='pause_ad')
-    async def stop_ad(call: CallbackQuery):
-        global stop
-        stop = True
-        await call.message.answer("To'xtatildi.")
-        raise CancelHandler
-
-    @dp.callback_query_handler(text='admin_menu_ad')
-    async def back_from_ad(call: CallbackQuery):
-        global stop
-        stop = True
-        await call.message.delete()
-        await call.message.answer("To'xtatildi", reply_markup=keyboard)
-        raise CancelHandler
-
+        await ad_message.answer(f"Reklama {sent} ta odamga yuborildi, {not_sent} ta odamga yuborilmadi")
 
 @dp.callback_query_handler(text='count_movie')
 async def counting(call: CallbackQuery):
