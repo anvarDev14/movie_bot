@@ -63,7 +63,7 @@ async def process_kino_kod(message: types.Message, state: FSMContext):
         await message.answer(
             "❌ Afsuski, bu kod bo‘yicha kino topilmadi.\n\n"
             "🔗 Yana ko‘proq kinolarni qidirish uchun kanalimizga tashrif buyuring: "
-            "[PremyeraFilm_A](https://t.me/PremyeraFilm_A)"
+            "https://t.me/PremyeraFilm_A"
         )
 
 
