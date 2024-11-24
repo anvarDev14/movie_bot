@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 
 from data.config import ADMINS
 from keyboards.inline.admin import keyboard, ad_menu
-from loader import dp, kino_db, user_db
+from loader import dp, kino_db, user_db, bot
 from states.states import KinoAddState, DeleteState, EditCap
 
 # Hafta va oylik filmlarni olish
