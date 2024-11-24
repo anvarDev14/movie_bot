@@ -48,7 +48,7 @@ async def month_stat(call: CallbackQuery):
 async def statistika(call: CallbackQuery):
     await call.message.delete()
     count = user_db.count_users()
-    await call.message.answer(f"Bazada <b>{count[0]}</b> ta foydalanuvchi bor")
+    await call.message.answer(f"Bazada <b>{count}</b> ta foydalanuvchi bor")
 
 @dp.callback_query_handler(text='ad')
 async def reklama(call: CallbackQuery):
