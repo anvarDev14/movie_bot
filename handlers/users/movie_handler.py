@@ -90,7 +90,7 @@ async def handle_ad_message(ad_message: types.Message):
             stop = False
             raise CancelHandler
 
-    text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent} ({admins}ta Admin)\nUmumiy: {user_db.count_users()}/{user_db.count_users()}\nStatus: Tugatildi"
+    text = f"Xabar yuborish\nYuborilgan: {sent}\nYuborilmagan: {not_sent} ({admins}ta Admin)\nUmumiy: {user_db.select_all_users()}/{user_db.select_all_users()}\nStatus: Tugatildi"
     await bot.edit_message_text(text, chat_id=ad_message.chat.id, message_id=status_message.message_id)
 
 @dp.callback_query_handler(text='pause_ad')
