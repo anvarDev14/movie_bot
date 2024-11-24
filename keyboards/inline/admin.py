@@ -13,18 +13,16 @@ keyboard=InlineKeyboardMarkup(
             InlineKeyboardButton(text="Bugungi kinolar", callback_data="today"),
             InlineKeyboardButton(text="Shu haftadagi kinolar",callback_data="week"),
             InlineKeyboardButton(text="Shu oydagi kinolar",callback_data="month")
-        ],
-
+        ]
     ]
 )
-
-
-ad_menu=InlineKeyboardMarkup(
-    inline_keyboard=[
+til=InlineKeyboardMarkup(
+    til_keyboard=[
         [
-            InlineKeyboardButton("To'xtatish⏸️",callback_data="pause_ad"),
-            InlineKeyboardButton("Yangilash🔃",callback_data='refresh_ad'),
-            InlineKeyboardButton("Orqaga🔙",callback_data='admin_menu_ad')
+            InlineKeyboardButton(text="UZ")
+        ],
+        [
+            InlineKeyboardButton(text="RU")
         ]
     ]
 )
