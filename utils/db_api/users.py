@@ -21,11 +21,12 @@ class UserDatatbase(Database):
         if created_at is None:
             created_at=datetime.now().isoformat()
         self.execute(sql,parameters=(telegram_id,username,created_at),commit=True)
+
     def select_all_users(self):
-        sql="""
+        sql = """
             SELECT * FROM Users
             """
-        self.execute(sql,fetchall=True)
+        return self.execute(sql, fetchall=True)
 
     def select_user(self, **kwargs):
         # SQL_EXAMPLE = "SELECT * FROM Users where id=1 AND Name='John'"
@@ -35,10 +36,11 @@ class UserDatatbase(Database):
         return self.execute(sql, parameters=parameters, fetchone=True)
 
     def count_users(self):
-        sql="""
+        sql = """
             SELECT COUNT(*) FROM Users
             """
-        self.execute(sql,fetchall=True)
+        result = self.execute(sql, fetchone=True)
+        return result[0]
 
     def delete_users(self):
         self.execute("DELETE FROM Users WHERE TRUE",commit=True)
