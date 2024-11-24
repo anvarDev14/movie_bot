@@ -107,8 +107,8 @@ async def back_from_ad(call:CallbackQuery):
     await call.message.answer("To'xtatildi",reply_markup=keyboard)
     raise CancelHandler
 
-    @dp.message_handler(content_types=['photo', 'video', 'text'])
-    async def handle_ad_message(ad_message: types.Message):
+@dp.message_handler(content_types=['photo', 'video', 'text'])
+async def handle_ad_message(ad_message: types.Message):
         not_sent = 0
         sent = 0
         for user_id in user_db.select_all_user_ids():
