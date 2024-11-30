@@ -17,7 +17,7 @@ async def user_count(message: types.Message):
     if str(message.from_user.id) in ADMINS:
         await message.answer(text='.', reply_markup=keyboard)
     else:
-        await message.answer("Siz admin emassiz.")
+        await message.answer("Admin:@anvarDev14")
 
 @dp.callback_query_handler(text='today')
 async def bugun_stat(call: CallbackQuery):
