@@ -10,5 +10,5 @@ async def set_default_commands(dp):
         #     types.BotCommand("add_movie","Kino qo'shish"),
         #     types.BotCommand("delete_movie","Kinoni o'chirish"),
         #     types.BotCommand("update","captionni yangilash")
-        # ]
+        ]
     )
