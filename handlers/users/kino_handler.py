@@ -268,7 +268,7 @@ async def search_kino_handler(message: types.Message):
                 caption=(
                     f"<b>{data['caption']}</b>\n\n"
                     f"📥 <b>Kino Yuklash Soni:</b> {data['count_download']}\n\n"
-                    f"📌 <b>Barcha kinolar:</b> <b>https://t.me/premiermoviekanal</b>\n\n"
+                    f"📌 <b>Barcha kinolar:</b> <b>https://t.me/premiermoviekanal kanalda</b>\n\n"
                 ),
                 parse_mode='HTML'
             )

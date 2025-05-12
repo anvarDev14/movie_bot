@@ -213,7 +213,7 @@ async def send_channel_link(message: types.Message):
         await message.answer("⚠️ Avval ro‘yxatdan o‘ting! /start buyrug‘ini yuboring.")
         return
     await message.answer(
-        "<b>🎬 Yangi kinolar:</b>\n📌 https://t.me/Kino_mania_2024",
+        "<b>🎬 Yangi kinolar:</b>\n📌 https://t.me/premiermoviekanal",
         parse_mode="HTML"
     )
 
