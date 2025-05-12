@@ -1,5 +1,6 @@
+# database.py: Umumiy ma'lumotlar bazasi bilan bog'lanish va "execute" funksiyasi
 import sqlite3
-
+from datetime import datetime
 
 def logger(statement):
     print(f"""

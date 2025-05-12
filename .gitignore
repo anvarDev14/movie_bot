@@ -131,6 +131,6 @@ dmypy.json
 .env
 
 
-#database ffiles
+# database files
 *.db
 data/*.db
