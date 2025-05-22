@@ -6,7 +6,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQu
 from handlers.users.kino_handler import setup_subscription_middleware
 from keyboards.default.admin_menu import admin_menu, admin_menu1
 from loader import dp, admins_db
-from states.State import AddAdmin
 from data.config import SUPER_ADMINS
 
 # Logging sozlamalari
@@ -106,10 +105,9 @@ async def process_admin_add(message: types.Message, state: FSMContext):
     try:
         telegram_id = int(args[0])
         full_name = args[1].strip()
-        admin_type = "super_admin" if await state.get_state() == AdminStates.super_admin.state else "admin"
-        admins_db.add_admin(telegram_id, full_name, admin_type=admin_type)
-        logger.info(f"{admin_type} qo‘shildi: ID={telegram_id}")
-        await send_response(message, f"✅ {full_name} (ID: {telegram_id}) {admin_type} sifatida qo‘shildi!", admin_menu)
+        admins_db.add_admin(telegram_id, full_name)  # admin_type olib tashlandi
+        logger.info(f"Admin qo‘shildi: ID={telegram_id}")
+        await send_response(message, f"✅ {full_name} (ID: {telegram_id}) admin sifatida qo‘shildi!", admin_menu)
     except ValueError:
         logger.info("Telegram ID noto‘g‘ri kiritildi")
         await send_response(message, "❌ Telegram ID faqat raqam bo‘lishi kerak!", admin_menu)
@@ -163,7 +161,7 @@ async def list_admins_handler(message: types.Message):
         await send_response(message, "❌ Hali hech qanday admin yo‘q.", admin_menu)
         return
     response = f"👮‍♂️ Adminlar ro‘yxati:\n\n👨‍💼 Adminlar soni: {len(admins)}\n\n"
-    response += "".join(f"🆔 {admin[0]} - {admin[1]} ({admin[2]})\n- - - - - - - - - - - - - - - - - -\n" for admin in admins)
+    response += "".join(f"🆔 {admin[0]} - {admin[1]} (admin)\n- - - - - - - - - - - - - - - - - -\n" for admin in admins)  # admin_type olib tashlandi
     logger.info("Adminlar ro‘yxati yuborildi")
     await send_response(message, response, admin_menu)
 

@@ -1,61 +1,51 @@
-from datetime import datetime
-from .database import Database
-from aiogram import types
-from aiogram.dispatcher import FSMContext
-from aiogram.types import CallbackQuery
-from aiogram import Bot
+import sqlite3
+from typing import List, Tuple
 
+class AdminDatabase:
+    def __init__(self, path_to_db: str):
+        self.conn = sqlite3.connect(path_to_db)
+        self.cursor = self.conn.cursor()
+        self._create_table()
 
-
-class AdminDatabase(Database):
-    def create_table_admins(self):
+    def _create_table(self) -> None:
+        """Admins jadvalini yaratadi."""
         sql = """
-            CREATE TABLE IF NOT EXISTS Admins (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                telegram_id BIGINT UNIQUE NOT NULL,
-                full_name VARCHAR(255) NOT NULL
-            );
+        CREATE TABLE IF NOT EXISTS Admins (
+            telegram_id BIGINT PRIMARY KEY,
+            username TEXT NOT NULL
+        );
         """
-        self.execute(sql, commit=True)
+        self.cursor.execute(sql)
+        self.conn.commit()
 
-
-    def add_admin(self, telegram_id: int, full_name: str):
-        sql = "INSERT INTO Admins (telegram_id, full_name) VALUES (?, ?);"
-        self.execute(sql, parameters=(telegram_id, full_name), commit=True)
-
-    def get_all_admins(self):
-        sql = "SELECT telegram_id, full_name FROM Admins;"
-        return self.execute(sql, fetchall=True)
-
-    def delete_admin(self, telegram_id: int):
-        sql = "DELETE FROM Admins WHERE telegram_id = ?;"
-        self.execute(sql, parameters=(telegram_id,), commit=True)
-
-    def is_admin(self, telegram_id: int):
+    def is_admin_exists(self, telegram_id: int) -> bool:
+        """Telegram ID bo‘yicha admin mavjudligini tekshiradi."""
         sql = "SELECT 1 FROM Admins WHERE telegram_id = ? LIMIT 1;"
-        return bool(self.execute(sql, parameters=(telegram_id,), fetchone=True))
+        self.cursor.execute(sql, (telegram_id,))
+        return bool(self.cursor.fetchone())
 
-    def get_admin_ids(self):
-        sql = "SELECT telegram_id FROM Admins"
-        result = self.execute(sql, fetchall=True)
-        return [row[0] for row in result] if result else []
+    def add_admin(self, telegram_id: int, username: str) -> None:
+        """Yangi admin qo‘shadi."""
+        sql = "INSERT OR IGNORE INTO Admins (telegram_id, username) VALUES (?, ?);"
+        self.cursor.execute(sql, (telegram_id, username))
+        self.conn.commit()
 
-    def is_admin_exists(self, telegram_id: int):
-        """Berilgan telegram_id bo‘yicha admin mavjudligini tekshiradi"""
-        sql = "SELECT COUNT(*) FROM Admins WHERE telegram_id = ?"
-        result = self.execute(sql, (telegram_id,), fetchone=True)
+    def get_admin_type(self, telegram_id: int) -> str:
+        """Admin turini qaytaradi (statik qiymat, chunki admin_type ustuni yo‘q)."""
+        return "admin"
 
-        return result[0] > 0 if result else False
+    def get_all_admins(self) -> List[Tuple[int, str]]:
+        """Barcha adminlarni qaytaradi."""
+        sql = "SELECT telegram_id, username FROM Admins;"
+        self.cursor.execute(sql)
+        return [(row[0], row[1], "admin") for row in self.cursor.fetchall()]
 
-    def get_statistics(self):
-        """Adminlar va foydalanuvchilar sonini olish"""
-        sql_admins = "SELECT COUNT(*) FROM Admins;"
-        sql_users = "SELECT COUNT(*) FROM Student;"
+    def delete_admin(self, telegram_id: int) -> None:
+        """Adminni o‘chiradi."""
+        sql = "DELETE FROM Admins WHERE telegram_id = ?;"
+        self.cursor.execute(sql, (telegram_id,))
+        self.conn.commit()
 
-        admin_count = self.execute(sql_admins, fetchone=True)[0]
-        user_count = self.execute(sql_users, fetchone=True)[0]
-
-        return {"admins": admin_count, "users": user_count}
-
-
-
+    def close(self) -> None:
+        """Ma'lumotlar bazasi ulanishini yopadi."""
+        self.conn.close()
