@@ -1,8 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.dispatcher.handler import SkipHandler
-from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.dispatcher.filters import Command
 from data.config import ADMINS
@@ -148,19 +146,19 @@ async def refresh_stats_callback(callback: types.CallbackQuery):
         await callback.answer("❌ Xatolik yuz berdi!", show_alert=False)
 
 # Kino qo‘shish
-@dp.message_handler(text=" ➕ Kino Qo‘shish")
+@dp.message_handler(text="➕ Kino Qo‘shish")
 async def message_kino_add(message: types.Message, state: FSMContext):
     admin_id = message.from_user.id
     if admin_id in ADMINS:
         await KinoAdd.kino_add.set()
-        await message.answer("Kinoni yuboring")
+        await message.answer("Kinoni yuboring", reply_markup=ReplyKeyboardRemove())
     else:
         await message.answer("Siz admin emassiz")
 
 @dp.message_handler(text="🔙 Admin menyu", state=KinoAdd.kino_add)
 async def cancel_kino_add(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.answer("Jarayon bekor qilindi. Siz bosh menyudasiz.", reply_markup=admin_menu)
+    await message.answer("Jarayon bekor qilindi. Siz admin menyudasiz.", reply_markup=admin_menu)
 
 @dp.message_handler(state=KinoAdd.kino_add, content_types=types.ContentType.VIDEO)
 async def kino_file_handler(message: types.Message, state: FSMContext):
@@ -177,6 +175,11 @@ async def kino_file_handler(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=KinoAdd.kino_code, content_types=types.ContentType.TEXT)
 async def kino_code_handler(message: types.Message, state: FSMContext):
+    if message.text == "🔙 Admin menyu":
+        await state.finish()
+        await message.answer("Jarayon bekor qilindi. Siz admin menyudasiz.", reply_markup=admin_menu)
+        return
+
     try:
         post_id = int(message.text)
         existing_kino = kino_db.search_kino_by_post_id(post_id)
@@ -188,7 +191,7 @@ async def kino_code_handler(message: types.Message, state: FSMContext):
             data['post_id'] = post_id
             kino_db.add_kino(post_id=data['post_id'], file_id=data['file_id'], caption=data['caption'])
 
-        await message.answer("✅ Kino muvaffaqiyatli qo‘shildi.")
+        await message.answer("✅ Kino muvaffaqiyatli qo‘shildi.", reply_markup=admin_menu)
         await state.finish()
     except ValueError:
         await message.answer("❌ Iltimos kino kodni faqat raqam bilan yuboring.")
@@ -199,7 +202,7 @@ async def movie_delete_handler(message: types.Message):
     admin_id = message.from_user.id
     if admin_id in ADMINS:
         await KinoDelete.kino_code.set()
-        await message.answer("🗑 O'chirmoqchi bo'lgan kino kodini yuboring")
+        await message.answer("🗑 O'chirmoqchi bo'lgan kino kodini yuboring", reply_markup=ReplyKeyboardRemove())
     else:
         await message.answer("🚫 Siz admin emassiz")
 
@@ -207,7 +210,7 @@ async def movie_delete_handler(message: types.Message):
 async def movie_kino_code(message: types.Message, state: FSMContext):
     if message.text == "🔙 Admin menyu":
         await state.finish()
-        await message.answer("Jarayon bekor qilindi. Siz bosh menyudasiz.", reply_markup=admin_menu)
+        await message.answer("Jarayon bekor qilindi. Siz admin menyudasiz.", reply_markup=admin_menu)
         return
 
     if not message.text.isdigit():
@@ -231,10 +234,10 @@ async def movie_kino_delete(message: types.Message, state: FSMContext):
         data['is_confirm'] = message.text
         if data['is_confirm'] == "✅Tasdiqlash":
             kino_db.delete_kino(data['post_id'])
-            await message.answer("Kino muvaffaqiyatli o'chirildi", reply_markup=ReplyKeyboardRemove())
+            await message.answer("Kino muvaffaqiyatli o'chirildi", reply_markup=admin_menu)
             await state.finish()
         elif data['is_confirm'] == "❌Bekor qilish":
-            await message.answer("Bekor qilindi", reply_markup=ReplyKeyboardRemove())
+            await message.answer("Bekor qilindi", reply_markup=admin_menu)
             await state.finish()
         else:
             await message.answer("Iltimos quyidagi tugmalardan birini tanlang", reply_markup=menu_movie)
@@ -267,18 +270,16 @@ async def search_kino_handler(message: types.Message):
 @dp.message_handler(text="🔙 Admin menyu", state=[ReklamaTuriState.tur, KinoDelete.kino_code, KinoAdd.kino_code])
 async def back_to_main_menu(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.answer("Jarayon Bekor Bo'ldi Admin Menyudasiz.", reply_markup=admin_menu)
+    await message.answer("Jarayon bekor qilindi. Siz admin menyudasiz.", reply_markup=admin_menu)
 
 # Bekor qilish handleri
-@dp.message_handler(
-    lambda message: message.text in ["➕ Kino Qo‘shish", "📊 Statistika", "📣 Reklama", "🗑 Kino O‘chirish"], state="*")
-@dp.message_handler(lambda message: message.text.lower() in ["bekor qilish", "/cancel"], state="*")
+@dp.message_handler(text=["Bekor qilish", "/cancel"], state="*")
 async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
     if current_state is not None:
         await state.finish()
     if message.from_user.id in ADMINS:
-        await message.answer("Jarayon bekor qilindi. Siz Admin menyudasiz.", reply_markup=admin_menu)
+        await message.answer("Jarayon bekor qilindi. Siz admin menyudasiz.", reply_markup=admin_menu)
     else:
         await message.answer("Jarayon bekor qilindi.", reply_markup=ReplyKeyboardRemove())
 
