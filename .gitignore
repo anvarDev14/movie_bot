@@ -134,3 +134,4 @@ dmypy.json
 # database files
 *.db
 data/*.db
+echo "data/*.db" >> .gitignore
