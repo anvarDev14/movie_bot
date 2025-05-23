@@ -23,10 +23,7 @@ def setup_subscription_middleware():
 @dp.message_handler(Command("admin"))
 async def admin_panel(message: types.Message):
     if message.from_user.id in ADMINS:
-        await message.delete()
-        msg = await message.answer("Admin paneliga xush kelibsiz! Kerakli bo‘limni tanlang:", reply_markup=admin_menu)
-        await asyncio.sleep(15)  # Bot xabarini 15 soniyadan so‘ng o‘chirish
-        await msg.delete()
+        await message.answer("Admin paneliga xush kelibsiz! Kerakli bo‘limni tanlang:", reply_markup=admin_menu)
     else:
         await message.answer("Siz admin emassiz.")
 
@@ -39,17 +36,12 @@ class KinoDelete(StatesGroup):
     is_confirm = State()
 
 # Statistika ko‘rish
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
 @dp.message_handler(text="📊 Statistika")
 async def show_stats(message: types.Message):
     if message.from_user.id not in ADMINS:
-        msg = await message.answer("🚫 <b>Siz admin emassiz.</b>", parse_mode="HTML")
-        await asyncio.sleep(10)
-        await msg.delete()
+        await message.answer("🚫 <b>Siz admin emassiz.</b>", parse_mode="HTML")
         return
 
-    await message.delete()
     try:
         total_kinos = kino_db.count_kinos()
         total_users = user_db.count_users()
@@ -83,21 +75,14 @@ async def show_stats(message: types.Message):
         markup = InlineKeyboardMarkup().add(
             InlineKeyboardButton("🔄 Yangilash", callback_data="refresh_stats")
         )
-        msg = await message.answer(stats_message, parse_mode="HTML", reply_markup=markup)
-        # Bot xabarini 60 soniyada o‘chirish (o‘rtacha admin o‘qish vaqti uchun)
-        await asyncio.sleep(60)
-        await msg.delete()
+        await message.answer(stats_message, parse_mode="HTML", reply_markup=markup)
     except Exception as e:
-        msg = await message.answer("❌ <b>Statistika olishda xatolik yuz berdi.</b>", parse_mode="HTML")
-        await asyncio.sleep(15)
-        await msg.delete()
+        await message.answer("❌ <b>Statistika olishda xatolik yuz berdi.</b>", parse_mode="HTML")
         print(f"[Xatolik]: {e}")
-
 
 # Callback handler - Yangilash tugmasi uchun
 @dp.callback_query_handler(lambda c: c.data == "refresh_stats")
 async def refresh_stats_callback(callback: types.CallbackQuery):
-    # Animatsiya bosqichlari
     stages = [
         "✨ <b>Yangilanmoqda</b> |◦◦◦◦◦|",
         "✨ <b>Yangilanmoqda</b> |●◦◦◦◦|",
@@ -106,19 +91,16 @@ async def refresh_stats_callback(callback: types.CallbackQuery):
         "✨ <b>Yangilanmoqda</b> |●●●●◦|"
     ]
 
-    # Yuklash animatsiyasi
     for stage in stages:
         await callback.message.edit_text(stage, parse_mode="HTML")
-        await asyncio.sleep(0.5)  # Har bir bosqich 0.3 soniya
+        await asyncio.sleep(0.5)
 
     try:
-        # Ma'lumotlarni olish
         total_kinos = kino_db.count_kinos()
         total_users = user_db.count_users()
         daily_users = user_db.count_daily_users()
         weekly_users = user_db.count_weekly_users()
         monthly_users = user_db.count_monthly_users()
-
         active_daily = user_db.count_active_daily_users()
         active_weekly = user_db.count_active_weekly_users()
         active_monthly = user_db.count_active_monthly_users()
@@ -143,16 +125,13 @@ async def refresh_stats_callback(callback: types.CallbackQuery):
             active_monthly=active_monthly
         )
 
-        # Inline klaviatura
         markup = InlineKeyboardMarkup().add(
             InlineKeyboardButton("🔄 Yangilash", callback_data="refresh_stats")
         )
 
-        # Yangilangan statistika va tasdiq
         await callback.message.edit_text(stats_message, parse_mode="HTML", reply_markup=markup)
         await callback.answer("✅ Muvaffaqiyatli yangilandi!", show_alert=False)
     except Exception as e:
-        # Xatolik uchun chiroyli dizayn
         error_message = (
             "❌ <b>Xatolik!</b>\n"
             " Ma'lumotlarni yangilab bo‘lmadi.\n"
@@ -169,11 +148,10 @@ async def refresh_stats_callback(callback: types.CallbackQuery):
         await callback.answer("❌ Xatolik yuz berdi!", show_alert=False)
 
 # Kino qo‘shish
-@dp.message_handler(text="➕ Kino Qo‘shish")
+@dp.message_handler(text=" ➕ Kino Qo‘shish")
 async def message_kino_add(message: types.Message, state: FSMContext):
     admin_id = message.from_user.id
     if admin_id in ADMINS:
-        await message.delete()  # Eski xabar o‘chiriladi
         await KinoAdd.kino_add.set()
         await message.answer("Kinoni yuboring")
     else:
@@ -182,7 +160,6 @@ async def message_kino_add(message: types.Message, state: FSMContext):
 @dp.message_handler(text="🔙 Admin menyu", state=KinoAdd.kino_add)
 async def cancel_kino_add(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.delete()  # Eski xabar o‘chiriladi
     await message.answer("Jarayon bekor qilindi. Siz bosh menyudasiz.", reply_markup=admin_menu)
 
 @dp.message_handler(state=KinoAdd.kino_add, content_types=types.ContentType.VIDEO)
@@ -195,7 +172,6 @@ async def kino_file_handler(message: types.Message, state: FSMContext):
         data['file_id'] = message.video.file_id
         data['caption'] = message.caption
 
-    await message.delete()  # Eski xabar o‘chiriladi
     await KinoAdd.kino_code.set()
     await message.answer("📎 <b>Kino uchun Kod kiriting:</b>", parse_mode='HTML')
 
@@ -212,11 +188,9 @@ async def kino_code_handler(message: types.Message, state: FSMContext):
             data['post_id'] = post_id
             kino_db.add_kino(post_id=data['post_id'], file_id=data['file_id'], caption=data['caption'])
 
-        await message.delete()  # Eski xabar o‘chiriladi
         await message.answer("✅ Kino muvaffaqiyatli qo‘shildi.")
         await state.finish()
     except ValueError:
-        await message.delete()  # Eski xabar o‘chiriladi
         await message.answer("❌ Iltimos kino kodni faqat raqam bilan yuboring.")
 
 # Kino o‘chirish
@@ -224,7 +198,6 @@ async def kino_code_handler(message: types.Message, state: FSMContext):
 async def movie_delete_handler(message: types.Message):
     admin_id = message.from_user.id
     if admin_id in ADMINS:
-        await message.delete()  # Eski xabar o‘chiriladi
         await KinoDelete.kino_code.set()
         await message.answer("🗑 O'chirmoqchi bo'lgan kino kodini yuboring")
     else:
@@ -234,12 +207,10 @@ async def movie_delete_handler(message: types.Message):
 async def movie_kino_code(message: types.Message, state: FSMContext):
     if message.text == "🔙 Admin menyu":
         await state.finish()
-        await message.delete()  # Eski xabar o‘chiriladi
         await message.answer("Jarayon bekor qilindi. Siz bosh menyudasiz.", reply_markup=admin_menu)
         return
 
     if not message.text.isdigit():
-        await message.delete()  # Eski xabar o‘chiriladi
         await message.answer("❌ Iltimos, kino kodini faqat raqam shaklida kiriting.")
         return
 
@@ -250,10 +221,8 @@ async def movie_kino_code(message: types.Message, state: FSMContext):
         if result:
             await message.answer_video(video=result['file_id'], caption=result['caption'])
             await KinoDelete.is_confirm.set()
-            await message.delete()  # Eski xabar o‘chiriladi
             await message.answer("Quyidagilardan birini tanlang", reply_markup=menu_movie)
         else:
-            await message.delete()  # Eski xabar o‘chiriladi
             await message.answer(f"⚠️ <b>{data['post_id']}</b> kod bilan kino topilmadi.", parse_mode="HTML")
 
 @dp.message_handler(state=KinoDelete.is_confirm, content_types=types.ContentType.TEXT)
@@ -262,11 +231,9 @@ async def movie_kino_delete(message: types.Message, state: FSMContext):
         data['is_confirm'] = message.text
         if data['is_confirm'] == "✅Tasdiqlash":
             kino_db.delete_kino(data['post_id'])
-            await message.delete()  # Eski xabar o‘chiriladi
             await message.answer("Kino muvaffaqiyatli o'chirildi", reply_markup=ReplyKeyboardRemove())
             await state.finish()
         elif data['is_confirm'] == "❌Bekor qilish":
-            await message.delete()  # Eski xabar o‘chiriladi
             await message.answer("Bekor qilindi", reply_markup=ReplyKeyboardRemove())
             await state.finish()
         else:
@@ -279,7 +246,6 @@ async def search_kino_handler(message: types.Message):
     user_db.update_last_active(user_id)
     post_id = int(message.text)
     data = kino_db.search_kino_by_post_id(post_id)
-    await message.delete()  # Eski xabar o‘chiriladi
     if data:
         try:
             await bot.send_video(
@@ -301,7 +267,6 @@ async def search_kino_handler(message: types.Message):
 @dp.message_handler(text="🔙 Admin menyu", state=[ReklamaTuriState.tur, KinoDelete.kino_code, KinoAdd.kino_code])
 async def back_to_main_menu(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.delete()  # Eski xabar o‘chiriladi
     await message.answer("Jarayon Bekor Bo'ldi Admin Menyudasiz.", reply_markup=admin_menu)
 
 # Bekor qilish handleri
@@ -312,7 +277,6 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
     if current_state is not None:
         await state.finish()
-    await message.delete()  # Eski xabar o‘chiriladi
     if message.from_user.id in ADMINS:
         await message.answer("Jarayon bekor qilindi. Siz Admin menyudasiz.", reply_markup=admin_menu)
     else:
