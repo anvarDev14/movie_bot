@@ -1,14 +1,14 @@
-version: '3.8'
-
 services:
   bot:
     build:
       context: .
       dockerfile: Dockerfile
-    image: movie_bot_bot
     container_name: aiogram_bot
-    volumes:
-      - .:/app
     environment:
-      - BOT_TOKEN=8136303197:AAFzGtpJjWduUwHTdPJjy9D0XemKYDY-tyI
-    restart: always
+      - BOT_TOKEN=${BOT_TOKEN}
+    volumes:
+      - ./data:/app/data  # Ma'lumotlarni saqlash uchun jild
+    restart: unless-stopped  # Konteyner o'chganda avto-qayta ishga tushadi
+
+volumes:
+  data:  # Ma'lumotlarni saqlash uchun nomlangan jild
